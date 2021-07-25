@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include
+		resource="org/springframework/boot/logging/logback/defaults.xml" />
+	
+	<springProperty scope="context" name="springAppName"
+		source="spring.application.name" />
+	
+	
+	<springProperty scope="context" name="INSTRUMENTATION_KEY"
+                    source="azure.application-insights.instrumentation-key"/>
+
+	<property name="LOG_FILE"
+		value="${BUILD_FOLDER:-build}/${springAppName}" />
+		
+		
+
+	<!--Setting appender for console logs to show logs in CF. -->
+	<appender name="console"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<!-- <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+			<fieldNames>
+				<message>log_message</message>
+			</fieldNames>
+		</encoder> -->
+		
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - tx.id=%X{x-transaction-id}%n - %msg%n
+			</Pattern>
+		</layout>
+	</appender>
+	
+	<appender name="aiAppender"
+              class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
+        <instrumentationKey>${INSTRUMENTATION_KEY}</instrumentationKey>      
+        <!-- <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+			<fieldNames>
+				<message>log_message</message>
+			</fieldNames>
+		</encoder> -->
+    </appender>
+
+	<logger name="com.example.demo" level="INFO" additivity="false">
+		<appender-ref ref="console" />
+		<appender-ref ref="aiAppender"/>
+	</logger>
+	
+	<logger name="com.microsoft.applicationinsights" level="DEBUG">
+		<appender-ref ref="console" />
+	</logger>
+
+	<root level="INFO">
+		<appender-ref ref="console" />
+		<appender-ref ref="aiAppender" />
+	</root>
+</configuration>
